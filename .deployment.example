@@ -1,0 +1,23 @@
+[config]
+command = pip install -r requirements.txt
+
+[setup]
+# 백엔드 API 서버 시작
+api = uvicorn backend.main:app --host 0.0.0.0 --port 8000
+
+# 프론트엔드 Streamlit 서버 시작
+frontend = streamlit run frontend/app.py --server.port 8501 --server.address 0.0.0.0
+
+[parameters]
+# Python 버전 지정
+SCM_PYTHON_VERSION = 3.11
+
+# 가상 환경 경로 (환경에 맞게 수정 필요)
+PYTHON_PATH = /path/to/your/python
+
+# 작업 디렉토리 (환경에 맞게 수정 필요)
+PROJECT_PATH = /path/to/your/project
+
+[postdeployment]
+# 데이터베이스 마이그레이션 등 배포 후 실행할 작업
+post_deployment_action = python scripts/post_deploy.py
