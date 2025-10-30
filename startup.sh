@@ -9,6 +9,15 @@ echo "Starting startup.sh..."
 
 cd /home/site/wwwroot || exit 1
 
+# ✅ 한글 폰트 설치
+echo "Installing Korean fonts..."
+apt-get update && apt-get install -y fonts-nanum
+
+# ✅ 로케일 설정
+export LANG=ko_KR.UTF-8
+export LC_ALL=ko_KR.UTF-8
+
+
 # Activate Oryx-created virtualenv if present
 if [ -d "/home/site/wwwroot/antenv" ]; then
   echo "Activating virtual environment: antenv"
