@@ -71,17 +71,19 @@ def main():
         st.subheader("제출된 설문 목록")
         responses = fetch_responses()
 
-        if responses:
-            for r in responses:
-                st.markdown("---")
-                st.write(f"🕒 등록일시: {r.get('reg_dt', 'N/A')}")
-                st.write(f"⭐ 별점: {r.get('rating')}")
-                st.write(f"👤 성별: {r.get('gender')}")
-                st.write(f"🎂 나이대: {r.get('age_group')}")
-                st.write(f"💬 피드백: {r.get('feedback')}")
-                st.write(f"🧠 감정 분석: {r.get('sentiment')}")
-        else:
-            st.info("아직 제출된 설문이 없습니다.")
+        print("responses????? :", responses)
+
+        # if responses:
+        #     for r in responses:
+        #         st.markdown("---")
+        #         st.write(f"🕒 등록일시: {r.get('reg_dt', 'N/A')}")
+        #         st.write(f"⭐ 별점: {r.get('rating')}")
+        #         st.write(f"👤 성별: {r.get('gender')}")
+        #         st.write(f"🎂 나이대: {r.get('age_group')}")
+        #         st.write(f"💬 피드백: {r.get('feedback')}")
+        #         st.write(f"🧠 감정 분석: {r.get('sentiment')}")
+        # else:
+        #     st.info("아직 제출된 설문이 없습니다.")
 
 if __name__ == "__main__":
     main()
