@@ -140,33 +140,73 @@ def main():
     with tabs[1]:
         st.subheader("제출된 설문 목록")        
 
-        # Azure Search 클라이언트 초기화
-        search_client = SearchClient(
-            endpoint=SEARCH_ENDPOINT,
-            index_name=INDEX_NAME,
-            credential=AzureKeyCredential(SEARCH_API_KEY)
-        )
+        try:
+            # Azure Search 클라이언트 초기화
+            search_client = SearchClient(
+                endpoint=SEARCH_ENDPOINT,
+                index_name=INDEX_NAME,
+                credential=AzureKeyCredential(SEARCH_API_KEY)
+            )
 
-        # # 검색어 입력 (선택적)
-        # query = st.text_input("🔍 키워드로 설문 검색", placeholder="예: 만족, 불편, 친절 등")
+            # 검색어 입력
+            query = st.text_input("🔍 키워드로 설문 검색", placeholder="예: 만족, 불편, 친절 등")
+            
+            # 정렬 옵션
+            sort_option = st.selectbox(
+                "정렬 기준",
+                ["최신순", "별점 높은순", "별점 낮은순"],
+                index=0
+            )
+            
+            # 정렬 기준 설정
+            if sort_option == "최신순":
+                order_by = "timestamp desc"
+            elif sort_option == "별점 높은순":
+                order_by = "rating desc"
+            else:  # 별점 낮은순
+                order_by = "rating asc"
 
-        # # 검색 실행
-        # if query:
-        #     results = search_client.search(search_text=query)
-        # else:
-        #     results = search_client.search(search_text="*")  # 전체 문서 조회
+            # 검색 실행
+            if query:
+                results = list(search_client.search(
+                    search_text=query,
+                    order_by=order_by,
+                    select="id,timestamp,rating,gender,age_group,feedback"
+                ))
+            else:
+                results = list(search_client.search(
+                    search_text="*",
+                    order_by=order_by,
+                    select="id,timestamp,rating,gender,age_group,feedback"
+                ))
 
-        results = search_client.search(search_text="*")  # 전체 문서 조회
+            # 통계 정보 표시
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.metric("총 응답 수", len(results))
+            with col2:
+                avg_rating = sum(doc.get('rating', 0) for doc in results) / len(results) if results else 0
+                st.metric("평균 별점", f"{avg_rating:.1f}")
+            with col3:
+                positive_count = sum(1 for doc in results if doc.get('rating', 0) >= 4)
+                st.metric("긍정적 응답", f"{positive_count}개")
 
-        # 결과 표시
-        st.markdown("### 📋 검색된 설문 응답")
-        for doc in results:
-            st.markdown("---")
-            st.markdown(f"**🕒 시간:** {doc.get('timestamp')}")
-            st.markdown(f"**⭐ 별점:** {doc.get('rating')}")
-            st.markdown(f"**👤 성별:** {doc.get('gender')}")
-            st.markdown(f"**🎂 나이대:** {doc.get('age_group')}")
-            st.markdown(f"**💬 피드백:** {doc.get('feedback')}")  
+            # 결과 표시
+            st.markdown("### 📋 검색된 설문 응답")
+            if not results:
+                st.info("검색된 설문 응답이 없습니다.")
+            
+            for doc in results:
+                with st.expander(f"⭐ {doc.get('rating')}점 | {doc.get('feedback')[:30]}...", expanded=True):
+                    st.markdown(f"**🕒 시간:** {doc.get('timestamp', 'N/A')}")
+                    st.markdown(f"**⭐ 별점:** {doc.get('rating', 'N/A')}")
+                    st.markdown(f"**👤 성별:** {doc.get('gender', 'N/A')}")
+                    st.markdown(f"**🎂 나이대:** {doc.get('age_group', 'N/A')}")
+                    st.markdown(f"**💬 피드백:** {doc.get('feedback', 'N/A')}")
+
+        except Exception as e:
+            st.error(f"데이터 조회 중 오류가 발생했습니다: {str(e)}")
+            st.write("상세 오류:", e.__class__.__name__)
 
 if __name__ == "__main__":
     main()
