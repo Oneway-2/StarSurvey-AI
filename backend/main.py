@@ -43,3 +43,7 @@ async def get_survey_results(survey_id: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/responses")
+def get_responses():
+    return list(db.query(SurveyResponse).order_by(SurveyResponse.reg_dt.desc()).all())    
