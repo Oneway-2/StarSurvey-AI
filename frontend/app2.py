@@ -7,6 +7,11 @@ import json
 import os
 from dotenv import load_dotenv
 from openai import AzureOpenAI
+from datetime import datetime
+from azure.search.documents import SearchClient
+from azure.core.credentials import AzureKeyCredential
+
+
 
 # 🔐 환경변수 로드
 load_dotenv()
@@ -16,6 +21,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 OPENAI_API_TYPE = os.getenv("OPENAI_API_TYPE", "azure")
 OPENAI_API_VERSION = os.getenv("OPENAI_API_VERSION")
+SEARCH_ENDPOINT = os.getenv("SEARCH_ENDPOINT")
+SEARCH_API_KEY = os.getenv("SEARCH_API_KEY")
+INDEX_NAME = os.getenv("INDEX_NAME")
+
 
 # Azure OpenAI 클라이언트 초기화
 client = AzureOpenAI(
@@ -31,13 +40,13 @@ st.set_page_config(page_title="Survey Viewer", layout="wide")
 def analyze_sentiment(text: str) -> Dict[str, Any]:
     """
     Azure OpenAI 기반 감정 분석 함수
-    반환 형태: {"sentiment": "positive/negative/neutral", "confidence": 0.85}
+    반환 형태: {"감정 분류": "긍정/부정/평안/슬픔/화남", "정확도": "85%", "원문": text}
     """
     try:
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",  # Azure에서 배포한 모델 이름
+            model="gpt-4.1-mini",
             messages=[
-                {"role": "user", "content": f"Analyze the sentiment of this text: {text}"}
+                {"role": "user", "content": f"다음 텍스트의 감정을 분류해줘. 감정은 긍정, 부정, 평안, 슬픔, 화남 중 하나여야 하고, 신뢰도는 0~1 사이 숫자로 줘. 텍스트: {text}"}
             ],
             response_format={
                 "type": "json_schema",
@@ -48,7 +57,7 @@ def analyze_sentiment(text: str) -> Dict[str, Any]:
                         "properties": {
                             "sentiment": {
                                 "type": "string",
-                                "enum": ["positive", "negative", "neutral"],
+                                "enum": ["긍정", "부정", "평안", "슬픔", "화남"],
                                 "description": "감정 분류"
                             },
                             "confidence": {
@@ -66,20 +75,24 @@ def analyze_sentiment(text: str) -> Dict[str, Any]:
         )
 
         result = json.loads(response.choices[0].message.content)
-        print(result["sentiment"], result["confidence"], text)
+        sentiment = result["sentiment"]
+        confidence_percent = f"{int(result['confidence'] * 100)}%"
+        print(f"감정 분류: {sentiment}, 정확도: {confidence_percent}, 원문: {text}")
+
         return {
-            "sentiment": result["sentiment"],
-            "confidence": result["confidence"],
-            "text": text
+            "감정 분류": sentiment,
+            "정확도": confidence_percent,
+            "원문": text
         }
 
     except Exception as e:
         return {
-            "sentiment": "unknown",
-            "confidence": 0.0,
-            "text": text,
-            "error": str(e)
+            "감정 분류": "분석 실패",
+            "정확도": "0%",
+            "원문": text,
+            "오류": str(e)
         }
+
 
 
 def main():
@@ -98,61 +111,62 @@ def main():
             submitted = st.form_submit_button("제출")
 
             if submitted:
+
                 answers = {
                     "rating": rating,
                     "gender": gender,
                     "age_group": age_group,
-                    "feedback": feedback
-                }
-
-                metadata = {
-                    "mode": "Popup",  # survey_mode가 주석 처리되어 있어 임시값 사용
-                    "timestamp": str(st.session_state.get("timestamp", ""))
+                    "feedback": feedback,
+                    "timestamp": datetime.now().isoformat()
                 }
 
                 result = analyze_sentiment(str(answers))                
 
                 if "error" not in result:
                     st.success("설문이 성공적으로 제출되었습니다!")
-                    st.write("감정 분석 결과:", result["sentiment"])
-                    st.write("신뢰도:", f"{result['confidence']:.2f}")
+                    st.write("감정 분석 결과:", result["감정 분류"])
+                    st.write("신뢰도:", result["정확도"])
+
+                    st.markdown(f"**🧠 감정 분류:** {result['감정 분류']}")
+                    st.markdown(f"**📈 정확도:** {result['정확도']}")                    
                 else:
                     st.error("설문 제출 중 오류가 발생했습니다.")
-                    st.caption(f"오류 내용: {result['error']}")
+                    st.caption(f"오류 내용: {result['오류']}")
+
+
 
 
     # Tab 2: 설문 결과 조회
     with tabs[1]:
-        st.subheader("제출된 설문 목록")
+        st.subheader("제출된 설문 목록")        
 
-        
-        # CSV 파일 경로
-        CSV_PATH = os.path.join("ai_search", "mock_data.csv")
+        # Azure Search 클라이언트 초기화
+        search_client = SearchClient(
+            endpoint=SEARCH_ENDPOINT,
+            index_name=INDEX_NAME,
+            credential=AzureKeyCredential(SEARCH_API_KEY)
+        )
 
-        # CSV 파일 불러오기
-        # try:
-        #     df = pd.read_csv(CSV_PATH)
-        #     st.success("목업 데이터를 성공적으로 불러왔습니다.")
-        # except Exception as e:
-        #     st.error(f"데이터를 불러오는 중 오류 발생: {str(e)}")
-        #     st.stop()
+        # # 검색어 입력 (선택적)
+        # query = st.text_input("🔍 키워드로 설문 검색", placeholder="예: 만족, 불편, 친절 등")
 
+        # # 검색 실행
+        # if query:
+        #     results = search_client.search(search_text=query)
+        # else:
+        #     results = search_client.search(search_text="*")  # 전체 문서 조회
 
+        results = search_client.search(search_text="*")  # 전체 문서 조회
 
-        # 데이터 미리보기
-        # st.subheader("전체 응답 데이터")
-        # st.dataframe(df, use_container_width=True)
-
-        # # 선택적 필터링 예시
-        # with st.expander("🔍 필터링 옵션"):
-        #     selected_sentiment = st.multiselect("감정 선택", options=df["sentiment"].unique())
-        #     if selected_sentiment:
-        #         df = df[df["sentiment"].isin(selected_sentiment)]
-        #         st.write(f"선택된 감정: {selected_sentiment}")
-
-        # # 필터링된 결과 출력
-        # st.subheader("📋 필터링된 결과")
-        # st.dataframe(df, use_container_width=True)        
+        # 결과 표시
+        st.markdown("### 📋 검색된 설문 응답")
+        for doc in results:
+            st.markdown("---")
+            st.markdown(f"**🕒 시간:** {doc.get('timestamp')}")
+            st.markdown(f"**⭐ 별점:** {doc.get('rating')}")
+            st.markdown(f"**👤 성별:** {doc.get('gender')}")
+            st.markdown(f"**🎂 나이대:** {doc.get('age_group')}")
+            st.markdown(f"**💬 피드백:** {doc.get('feedback')}")  
 
 if __name__ == "__main__":
     main()
