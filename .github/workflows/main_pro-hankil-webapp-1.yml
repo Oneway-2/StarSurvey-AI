@@ -36,8 +36,9 @@ jobs:
       - name: Prepare deployment folder
         run: |
           mkdir output
-          cp -r * output/
+          rsync -av --exclude 'output' ./ output/
           rm -rf output/antenv
+
 
       # ✅ [추가] output 폴더를 tar.gz로 압축
       - name: Create tar.gz package
