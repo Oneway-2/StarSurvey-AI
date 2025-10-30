@@ -58,6 +58,7 @@ def analyze_sentiment(text: str) -> Dict[str, Any]:
         )
 
         result = json.loads(response.choices[0].message.content)
+        print(result["sentiment"], result["confidence"], text)
         return {
             "sentiment": result["sentiment"],
             "confidence": result["confidence"],
@@ -76,4 +77,4 @@ def analyze_sentiment(text: str) -> Dict[str, Any]:
 if __name__ == "__main__":
     sample = "오늘 시험을 잘 봤어요! 정말 기쁩니다."
     result = analyze_sentiment(sample)
-    print(result)
+    print(sample, result)

@@ -1,3 +1,5 @@
+# uvicorn backend.main:app --host 0.0.0.0 --port 8001
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Dict, Any
@@ -46,4 +48,12 @@ async def get_survey_results(survey_id: str):
     
 @app.get("/responses")
 def get_responses():
-    return list(db.query(SurveyResponse).order_by(SurveyResponse.reg_dt.desc()).all())    
+    # Try using a real DB if available; otherwise fall back to a file-based store or empty list.
+    try:
+        return list(db.query(SurveyResponse).order_by(SurveyResponse.reg_dt.desc()).all())
+    except Exception:
+        storage_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "responses.json")
+        if os.path.exists(storage_path):
+            with open(storage_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return []    
