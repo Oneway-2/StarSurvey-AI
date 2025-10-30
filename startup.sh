@@ -13,12 +13,23 @@ cd /home/site/wwwroot || exit 1
 if [ -d "/home/site/wwwroot/antenv" ]; then
   echo "Activating virtual environment: antenv"
   source /home/site/wwwroot/antenv/bin/activate
+else
+  echo "Virtual environment not found. Proceeding with system Python."
 fi
 
 # Install dependencies (optional, usually done at build time)
 if [ -f "requirements.txt" ]; then
   echo "Installing requirements..."
-  pip install -r requirements.txt
+
+  # Check if pip is available
+  if ! command -v pip &> /dev/null; then
+    echo "pip not found, trying python -m pip"
+    python -m pip install -r requirements.txt
+  else
+    pip install -r requirements.txt
+  fi
+else
+  echo "No requirements.txt found. Skipping dependency installation."
 fi
 
 # Start FastAPI backend on internal port (not exposed)
