@@ -147,14 +147,11 @@ def main():
                 index_name=INDEX_NAME,
                 credential=AzureKeyCredential(SEARCH_API_KEY)
             )
-
-            # 검색어 입력
-            query = st.text_input("🔍 키워드로 설문 검색", placeholder="예: 만족, 불편, 친절 등")
             
             # 정렬 옵션
             sort_option = st.selectbox(
                 "정렬 기준",
-                ["최신순", "별점 높은순", "별점 낮은순"],
+                ["별점 낮은순", "별점 높은순", "최신순"],
                 index=0
             )
             
@@ -167,18 +164,11 @@ def main():
                 order_by = "rating asc"
 
             # 검색 실행
-            if query:
-                results = list(search_client.search(
-                    search_text=query,
-                    order_by=order_by,
-                    select="id,timestamp,rating,gender,age_group,feedback"
-                ))
-            else:
-                results = list(search_client.search(
-                    search_text="*",
-                    order_by=order_by,
-                    select="id,timestamp,rating,gender,age_group,feedback"
-                ))
+            results = list(search_client.search(
+                search_text="*",
+                order_by=order_by,
+                select="id,timestamp,rating,gender,age_group,feedback"
+            ))
 
             # 통계 정보 표시
             col1, col2, col3 = st.columns(3)

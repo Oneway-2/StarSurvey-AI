@@ -1,7 +1,7 @@
-!/bin/bash
-startup script for Azure App Service (Linux)
-- run FastAPI backend in background
-- run Streamlit frontend as main process (exposed to outside)
+#!/bin/bash
+# startup script for Azure App Service (Linux)
+# - run FastAPI backend in background
+# - run Streamlit frontend as main process (exposed to outside)
 
 set -e
 
