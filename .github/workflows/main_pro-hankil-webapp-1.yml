@@ -73,5 +73,4 @@ jobs:
         with:
           app-name: 'pro-hankil-webapp-1'
           slot-name: 'Production'
-
-          
+          package: 'output/'  # 압축을 풀어 배포할 폴더 지정
