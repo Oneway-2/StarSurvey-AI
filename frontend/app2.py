@@ -93,15 +93,96 @@ def analyze_sentiment(text: str) -> Dict[str, Any]:
             "오류": str(e)
         }
 
+# 이것은 날짜별 report를 전부 읽어내서 요약을 작성해주는 함수이다.
+def generate_daily_report(date: str, feedback_list: list[str], total_count: int, avg_rating: float, positive_ratio: float, negative_ratio: float) -> str:
+    """선택된 날짜의 피드백을 기반으로 템플릿에 맞춘 AI 보고서 생성"""
+    combined_text = "\n".join(feedback_list)
+
+    prompt = f"""
+다음은 {date}에 제출된 고객 피드백입니다. 아래 템플릿에 맞춰 보고서를 작성해주세요.
+
+총 응답 수: {total_count}건
+평균 별점: {avg_rating:.1f}점
+긍정 피드백 비율: {positive_ratio:.0f}%
+부정 피드백 비율: {negative_ratio:.0f}%
+
+피드백 목록:
+{combined_text}
+
+보고서 템플릿:
+
+# 📊 고객 피드백 요약 보고서 ({date} 기준)
+
+## 🗓️ 분석 대상
+- 날짜: {date}
+- 총 응답 수: {total_count}건
+- 평균 만족도: ★★★☆☆ (평균 별점: {avg_rating:.1f}점)
+
+---
+
+## 😊 고객이 긍정적으로 평가한 점
+
+다음은 고객들이 만족스럽다고 평가한 주요 항목입니다:
+
+- ✅ **친절한 직원 응대**  
+  예: ...
+- ✅ **서비스의 편리함과 결과 만족도**  
+  예: ...
+- ✅ **기대 이상의 경험**  
+  예: ...
+
+---
+
+## ⚠️ 개선이 시급한 문제점
+
+다음은 고객들이 불만을 표시하거나 조치가 필요한 항목입니다:
+
+- ❌ **기능 오류 및 시스템 문제**  
+  예: ...
+- ❌ **불친절한 응대 및 고객 지원 부족**  
+  예: ...
+- ❌ **재방문 의사 없음 및 강한 불만**  
+  예: ...
+
+---
+
+## 📌 요약 인사이트
+
+- 긍정 피드백 비율: {positive_ratio:.0f}%
+- 부정 피드백 비율: {negative_ratio:.0f}%
+- 주요 만족 요인: [친절함, 편리함, 결과 만족도]
+- 주요 불만 요인: [기능 오류, 고객 응대, 속도 문제]
+
+---
+
+## 🧠 AI 추천 액션
+
+- 고객 응대 품질 향상을 위한 교육 강화
+- 기능 오류 및 속도 개선을 위한 기술 점검
+- 불만 고객 대상 사후 만족도 회복 프로그램 운영
+
+---
+
+보고서 생성 시간: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+분석 모델: Azure OpenAI 기반 감정 분석 + 키워드 요약
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4.1-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.3
+    )
+
+    return response.choices[0].message.content
 
 
 def main():
     st.title("Star Survey AI")
 
-    tabs = st.tabs(["📋 설문 제출", "📊 설문 결과 조회"])
+    tabs = st.tabs(["📊 설문 결과 조회", "📋 설문 제출"])
 
     # Tab 1: 설문 제출
-    with tabs[0]:
+    with tabs[1]:
         with st.form("survey_form"):
             rating = st.slider("별점을 선택해주세요", 1, 5, 3)
             gender = st.radio("성별을 선택해주세요", ["남성", "여성", "기타"])
@@ -137,7 +218,7 @@ def main():
 
 
     # Tab 2: 설문 결과 조회
-    with tabs[1]:
+    with tabs[0]:
         st.subheader("제출된 설문 목록")        
 
         try:
@@ -163,36 +244,71 @@ def main():
             else:  # 별점 낮은순
                 order_by = "rating asc"
 
-            # 검색 실행
-            results = list(search_client.search(
-                search_text="*",
-                order_by=order_by,
-                select="id,timestamp,rating,gender,age_group,feedback"
-            ))
+            # 검색을 실행중임~~
+            with st.spinner("데이터를 불러오는 중입니다..."):
+                # 검색 실행
+                results = list(search_client.search(
+                    search_text="*",
+                    order_by=order_by,
+                    select="id,timestamp,rating,gender,age_group,feedback"
+                ))
+
+            # 날짜 목록 추출
+            date_list = sorted({doc['timestamp'][:10] for doc in results})
+            selected_date = st.selectbox("조회할 날짜를 선택하세요", date_list)
+            # 선택된 날짜에 해당하는 설문만 필터링
+            filtered_results = [doc for doc in results if doc['timestamp'].startswith(selected_date)]
 
             # 통계 정보 표시
             col1, col2, col3 = st.columns(3)
             with col1:
-                st.metric("총 응답 수", len(results))
+                st.metric("총 응답 수", len(filtered_results))
             with col2:
-                avg_rating = sum(doc.get('rating', 0) for doc in results) / len(results) if results else 0
+                avg_rating = sum(doc.get('rating', 0) for doc in filtered_results) / len(filtered_results) if filtered_results else 0
                 st.metric("평균 별점", f"{avg_rating:.1f}")
             with col3:
-                positive_count = sum(1 for doc in results if doc.get('rating', 0) >= 4)
+                positive_count = sum(1 for doc in filtered_results if doc.get('rating', 0) >= 4)
                 st.metric("긍정적 응답", f"{positive_count}개")
 
+            ############# 보고서 추출부분
+            # 피드백만 추출
+            feedback_texts = [doc.get("feedback", "") for doc in filtered_results if doc.get("feedback")]
+            ratings = [doc.get("rating", 0) for doc in filtered_results]
+
+            # 통계 계산
+            total_count = len(filtered_results)
+            avg_rating = sum(ratings) / total_count if total_count else 0
+            positive_ratio = sum(1 for r in ratings if r >= 4) / total_count * 100 if total_count else 0
+            negative_ratio = sum(1 for r in ratings if r <= 2) / total_count * 100 if total_count else 0
+
+            # 보고서 생성
+            if feedback_texts:
+                with st.spinner("AI가 보고서를 생성 중입니다..."):
+                    report = generate_daily_report(
+                        date=selected_date,
+                        feedback_list=feedback_texts,
+                        total_count=total_count,
+                        avg_rating=avg_rating,
+                        positive_ratio=positive_ratio,
+                        negative_ratio=negative_ratio
+                    )
+                    st.markdown("### 📝 고객 피드백 요약 보고서")
+                    st.markdown(report)
+            ############# 보고서 추출부분
+
             # 결과 표시
-            st.markdown("### 📋 검색된 설문 응답")
-            if not results:
-                st.info("검색된 설문 응답이 없습니다.")
-            
-            for doc in results:
-                with st.expander(f"⭐ {doc.get('rating')}점 | {doc.get('feedback')[:30]}...", expanded=True):
-                    st.markdown(f"**🕒 시간:** {doc.get('timestamp', 'N/A')}")
-                    st.markdown(f"**⭐ 별점:** {doc.get('rating', 'N/A')}")
-                    st.markdown(f"**👤 성별:** {doc.get('gender', 'N/A')}")
-                    st.markdown(f"**🎂 나이대:** {doc.get('age_group', 'N/A')}")
-                    st.markdown(f"**💬 피드백:** {doc.get('feedback', 'N/A')}")
+            with st.expander(f"📋 검색된 설문 응답 전부 보기 ({total_count}개)", expanded=False):
+            # st.markdown("### 📋 검색된 설문 응답")
+                if not results:
+                    st.info("검색된 설문 응답이 없습니다.")
+                
+                for doc in results:
+                    with st.expander(f"⭐ {doc.get('rating')}점 | {doc.get('feedback')[:30]}...", expanded=True):
+                        st.markdown(f"**🕒 시간:** {doc.get('timestamp', 'N/A')}")
+                        st.markdown(f"**⭐ 별점:** {doc.get('rating', 'N/A')}")
+                        st.markdown(f"**👤 성별:** {doc.get('gender', 'N/A')}")
+                        st.markdown(f"**🎂 나이대:** {doc.get('age_group', 'N/A')}")
+                        st.markdown(f"**💬 피드백:** {doc.get('feedback', 'N/A')}")
 
         except Exception as e:
             st.error(f"데이터 조회 중 오류가 발생했습니다: {str(e)}")
