@@ -179,7 +179,7 @@ def generate_daily_report(date: str, feedback_list: list[str], total_count: int,
 def main():
     st.title("Star Survey AI")
 
-    tabs = st.tabs(["📊 설문 결과 조회", "📋 설문 제출", "테스트", "설계"])
+    tabs = st.tabs(["📊 설문 결과 조회", "📋 설문 제출", "📋 팝업목업", "📋 설계"])
 
 
 
@@ -330,95 +330,95 @@ def main():
         pass
 #         st.set_page_config(page_title="서비스 피드백", layout="centered")
 
-#         st.markdown("""
-# <!DOCTYPE html>
-# <html lang="ko">
-# <head>
-#   <meta charset="UTF-8" />
-#   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-#   <title>서비스 피드백</title>
-#   <style>
-#     body {
-#       background-color: #f2f2f2;
-#       font-family: 'Noto Sans KR', sans-serif;
-#       display: flex;
-#       justify-content: center;
-#       align-items: center;
-#       height: 100vh;
-#     }
-#     .card {
-#       background-color: #fff;
-#       padding: 40px;
-#       border-radius: 16px;
-#       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-#       width: 400px;
-#       text-align: center;
-#     }
-#     .card h2 {
-#       font-size: 24px;
-#       margin-bottom: 16px;
-#     }
-#     .card p {
-#       font-size: 14px;
-#       color: #666;
-#       margin-bottom: 24px;
-#     }
-#     .stars {
-#       margin-bottom: 24px;
-#     }
-#     .star {
-#       font-size: 24px;
-#       color: #ccc;
-#       cursor: pointer;
-#       transition: color 0.3s;
-#     }
-#     .star:hover,
-#     .star.selected {
-#       color: #ff9800;
-#     }
-#     textarea {
-#       width: 100%;
-#       height: 100px;
-#       padding: 12px;
-#       border: 1px solid #ccc;
-#       border-radius: 8px;
-#       resize: none;
-#       font-size: 14px;
-#       margin-bottom: 24px;
-#     }
-#     button {
-#       background-color: #ff9800;
-#       color: white;
-#       border: none;
-#       padding: 12px 24px;
-#       border-radius: 8px;
-#       font-size: 16px;
-#       cursor: pointer;
-#       transition: background-color 0.3s;
-#     }
-#     button:hover {
-#       background-color: #e68900;
-#     }
-#   </style>
-# </head>
-# <body>
-#   <div class="card">
-#     <h2>서비스는 어떠셨나요?</h2>
-#     <div class="stars">
-#       <span class="star">&#9733;</span>
-#       <span class="star">&#9733;</span>
-#       <span class="star">&#9733;</span>
-#       <span class="star">&#9733;</span>
-#       <span class="star">&#9733;</span>
-#     </div>
-#     <p>여러분의 의견을 남겨주세요. <br>더 나은 서비스로 보답하겠습니다.</p>
-#     <textarea placeholder="여기에 의견을 입력해주세요..."></textarea>
-#     <button>등록</button>
-#   </div>
-# </body>
-# </html>
+        st.markdown("""
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서비스 피드백</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+    .card h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .card p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+    .stars {
+      margin-bottom: 24px;
+    }
+    .star {
+      font-size: 24px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .star:hover,
+    .star.selected {
+      color: #ff9800;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: none;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    button {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e68900;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>서비스는 어떠셨나요?</h2>
+    <div class="stars">
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+    </div>
+    <p>여러분의 의견을 남겨주세요. <br>더 나은 서비스로 보답하겠습니다.</p>
+    <textarea placeholder="여기에 의견을 입력해주세요..."></textarea>
+    <button>등록</button>
+  </div>
+</body>
+</html>
 
-#         """, unsafe_allow_html=True)    
+        """, unsafe_allow_html=True)    
 
 
     # Tab 2: 설문설계 페이지 UI
@@ -426,19 +426,54 @@ def main():
         st.subheader("📝 설문 설계")
 
         # 1. 설문 이름
-        survey_title = st.text_input("1. 설문 이름", placeholder="예: 고객 만족도 조사")
+        survey_title = st.text_input("1. 설문 이름", placeholder="예: 고객 만족도 조사", value="고객 만족도 조사")
 
         # 2. 메인 질문
-        main_question = st.text_input("2. 메인 질문", placeholder="예: 이번 서비스는 만족스러우셨나요?")
+        main_question = st.text_input("2. 메인 질문", placeholder="예: 이번 서비스는 만족스러우셨나요?", value="이번 서비스는 만족스러우셨나요?")
 
         # 3. 질문 placeholder
-        question_placeholder = st.text_input("3. 질문 입력창 안내 문구", placeholder="예: 자유롭게 의견을 입력해주세요.")
+        question_placeholder = st.text_input("3. 질문 입력창 안내 문구", placeholder="예: 자유롭게 의견을 입력해주세요.", value="여러분의 의견을 남겨주세요. 더 나은 서비스로 보답하겠습니다.")
 
-        # 미리보기
+        st.markdown("### ➕ Yes or No 추가 질문")
+
+        # 초기화
+        if "extra_questions" not in st.session_state:
+            st.session_state.extra_questions = []
+
+        # 버튼 클릭 시 질문 추가
+        if st.button("질문 추가"):
+            if len(st.session_state.extra_questions) < 5:
+                st.session_state.extra_questions.append("")
+            else:
+                st.warning("최대 5개의 질문만 추가할 수 있습니다.")
+
+        # 추가된 질문 입력창 표시
+        for i in range(len(st.session_state.extra_questions)):
+            st.session_state.extra_questions[i] = st.text_input(
+                f"추가 질문 {i+1}", value=st.session_state.extra_questions[i], key=f"extra_q_{i}"
+            )        
+
+        # -------------------
+        # 설문 미리보기 영역
+        # -------------------
         st.markdown("---")
         st.markdown("### 🔍 설문 미리보기")
+
+        if survey_title:
+            st.markdown(f"#### 📋 {survey_title}")
+
         st.write(f"**{main_question or '메인 질문이 여기에 표시됩니다.'}**")
         st.text_area(label=question_placeholder or "질문 입력창 안내 문구가 여기에 표시됩니다...", height=100)
+
+        if st.session_state.extra_questions:
+            st.markdown("#### ✅ 추가 질문 (Yes/No)")
+            for i, q in enumerate(st.session_state.extra_questions):
+                if q.strip():
+                    st.radio(f"{i+1}. {q}", options=["Yes", "No"], key=f"preview_q_{i}")
+
+
+
+
 
 if __name__ == "__main__":
     main()
