@@ -327,97 +327,98 @@ def main():
 
     # Tab 2: 테스트
     with tabs[2]:
-        st.set_page_config(page_title="서비스 피드백", layout="centered")
+        pass
+#         st.set_page_config(page_title="서비스 피드백", layout="centered")
 
-        st.markdown("""
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>서비스 피드백</title>
-  <style>
-    body {
-      background-color: #f2f2f2;
-      font-family: 'Noto Sans KR', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .card {
-      background-color: #fff;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 400px;
-      text-align: center;
-    }
-    .card h2 {
-      font-size: 24px;
-      margin-bottom: 16px;
-    }
-    .card p {
-      font-size: 14px;
-      color: #666;
-      margin-bottom: 24px;
-    }
-    .stars {
-      margin-bottom: 24px;
-    }
-    .star {
-      font-size: 24px;
-      color: #ccc;
-      cursor: pointer;
-      transition: color 0.3s;
-    }
-    .star:hover,
-    .star.selected {
-      color: #ff9800;
-    }
-    textarea {
-      width: 100%;
-      height: 100px;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      resize: none;
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-    button {
-      background-color: #ff9800;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-    button:hover {
-      background-color: #e68900;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h2>서비스는 어떠셨나요?</h2>
-    <div class="stars">
-      <span class="star">&#9733;</span>
-      <span class="star">&#9733;</span>
-      <span class="star">&#9733;</span>
-      <span class="star">&#9733;</span>
-      <span class="star">&#9733;</span>
-    </div>
-    <p>여러분의 의견을 남겨주세요. <br>더 나은 서비스로 보답하겠습니다.</p>
-    <textarea placeholder="여기에 의견을 입력해주세요..."></textarea>
-    <button>등록</button>
-  </div>
-</body>
-</html>
+#         st.markdown("""
+# <!DOCTYPE html>
+# <html lang="ko">
+# <head>
+#   <meta charset="UTF-8" />
+#   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+#   <title>서비스 피드백</title>
+#   <style>
+#     body {
+#       background-color: #f2f2f2;
+#       font-family: 'Noto Sans KR', sans-serif;
+#       display: flex;
+#       justify-content: center;
+#       align-items: center;
+#       height: 100vh;
+#     }
+#     .card {
+#       background-color: #fff;
+#       padding: 40px;
+#       border-radius: 16px;
+#       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+#       width: 400px;
+#       text-align: center;
+#     }
+#     .card h2 {
+#       font-size: 24px;
+#       margin-bottom: 16px;
+#     }
+#     .card p {
+#       font-size: 14px;
+#       color: #666;
+#       margin-bottom: 24px;
+#     }
+#     .stars {
+#       margin-bottom: 24px;
+#     }
+#     .star {
+#       font-size: 24px;
+#       color: #ccc;
+#       cursor: pointer;
+#       transition: color 0.3s;
+#     }
+#     .star:hover,
+#     .star.selected {
+#       color: #ff9800;
+#     }
+#     textarea {
+#       width: 100%;
+#       height: 100px;
+#       padding: 12px;
+#       border: 1px solid #ccc;
+#       border-radius: 8px;
+#       resize: none;
+#       font-size: 14px;
+#       margin-bottom: 24px;
+#     }
+#     button {
+#       background-color: #ff9800;
+#       color: white;
+#       border: none;
+#       padding: 12px 24px;
+#       border-radius: 8px;
+#       font-size: 16px;
+#       cursor: pointer;
+#       transition: background-color 0.3s;
+#     }
+#     button:hover {
+#       background-color: #e68900;
+#     }
+#   </style>
+# </head>
+# <body>
+#   <div class="card">
+#     <h2>서비스는 어떠셨나요?</h2>
+#     <div class="stars">
+#       <span class="star">&#9733;</span>
+#       <span class="star">&#9733;</span>
+#       <span class="star">&#9733;</span>
+#       <span class="star">&#9733;</span>
+#       <span class="star">&#9733;</span>
+#     </div>
+#     <p>여러분의 의견을 남겨주세요. <br>더 나은 서비스로 보답하겠습니다.</p>
+#     <textarea placeholder="여기에 의견을 입력해주세요..."></textarea>
+#     <button>등록</button>
+#   </div>
+# </body>
+# </html>
 
-        """, unsafe_allow_html=True)    
+#         """, unsafe_allow_html=True)    
 
 
     # Tab 2: 설문설계 페이지 UI
