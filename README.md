@@ -90,10 +90,21 @@ azure-core
 
 ---
 ## 💢 Trouble Shooting
-- Github action - Azure App service를 통한 web app 배포간에 package 형태로 배포되어 root 경로에 startup.sh 를 찾지못함
+- <b>Github action - Azure App service를 통한 web app 배포간에 package 형태로 배포되어 root 경로에 startup.sh 를 찾지못함 </b>
   - 환경변수 SCM_DO_BUILD_DURING_DEPLOYMENT 와, WEBSITE_RUN_FROM_PACKAGE 값을 0으로 바꾸어 해결
+    - SCM_DO_BUILD_DURING_DEPLOYMENT --> 배포 후 Azure가 빌드하는 것을 막음. github aciton 내 자체적으로 빌드를 수행하기에.
+    - WEBSITE_RUN_FROM_PACKAG --> Azure은 ZIP 패키지를 실행하는 기능을 자체적으로 갖고있는데, 계속 tar.gz 파일로 압축이 돼서 기능 해제함. 
 
-- 
+- <b>DB 연동 실패 </b>
+  - PostgreSQL 연동하고 날짜별 데이터 select 하여 사용하려고 하였으나 python, azure 경험 부족으로 사용 철회하고
+  - mockup 데이터 생성하여 Azure AI Search 내 indexes로 넣어놓고 호출하여 사용.
+
+- <b>Azure AI Search를 이용한 목업파일 업로드 </b>
+  - Mockup 데이터 csv 파일로 생성 후 Azure storage account 업로드 후,
+  - Azure AI Search 내 indexes로 import 하였으나, 업로드는 완료하였으나 데이터 호출이 되지 않음.
+    - Data import 하는과정에서 field 설정이 알맞게 되지 않는것으로 보임
+    - 직접 업로드 방법이 아니라, reset_search_index.py 코드를 통해 랜덤데이터 삽입
+
 
 ## 만들며 어려웠던 점
 ### - 설문 관리자 포탈, 설문 팝업 등 모두 시연 가능하게 만들고자 하였으나 쉽지않았음.
