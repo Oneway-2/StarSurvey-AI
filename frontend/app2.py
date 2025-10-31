@@ -179,12 +179,10 @@ def generate_daily_report(date: str, feedback_list: list[str], total_count: int,
 def main():
     st.title("Star Survey AI")
 
+    # 여기서 탭의 순서와 제목을 나열할 수 있음.
     tabs = st.tabs(["📊 설문 결과 조회", "📋 설문 제출", "📋 팝업목업", "📋 설계"])
 
-
-
-
-    # Tab 2: 설문 결과 조회
+    # Tab 0: 설문 결과 조회
     with tabs[0]:
         st.subheader("제출된 설문 목록")        
 
@@ -323,9 +321,7 @@ def main():
                     st.error("설문 제출 중 오류가 발생했습니다.")
                     st.caption(f"오류 내용: {result['오류']}")
 
-
-
-    # Tab 2: 테스트
+    # Tab 2: 팝업목업 테스트.
     with tabs[2]:
         pass
 #         st.set_page_config(page_title="서비스 피드백", layout="centered")
@@ -420,8 +416,7 @@ def main():
 
         """, unsafe_allow_html=True)    
 
-
-    # Tab 2: 설문설계 페이지 UI
+    # Tab 3: 설문설계 페이지 UI
     with tabs[3]:
         st.subheader("📝 설문 설계")
 
@@ -470,10 +465,6 @@ def main():
             for i, q in enumerate(st.session_state.extra_questions):
                 if q.strip():
                     st.radio(f"{i+1}. {q}", options=["Yes", "No"], key=f"preview_q_{i}")
-
-
-
-
 
 if __name__ == "__main__":
     main()
