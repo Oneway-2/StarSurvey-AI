@@ -1,8 +1,8 @@
 # 🧠 Star Survey AI
 
-Streamlit 기반의 설문 수집 및 감정 분석 웹 애플리케이션입니다.  
-Azure OpenAI를 활용해 고객 피드백을 자동으로 분석하고 요약하며,  
-Azure App Service에 배포되어 운영됩니다.
+Star(별점 , 만족도) + Survey(설문) + AI
+
+수집된 만족도 설문 응답에 대한 리포트를 작성해주는 애플리케이션입니다. 
 
 ---
 
@@ -19,10 +19,8 @@ Azure App Service에 배포되어 운영됩니다.
 
 ## 🚀 주요 기능
 
-### 📋 설문 제출
-- 성별, 나이대, 별점, 자유 피드백을 입력
-- 제출 시 Azure OpenAI를 통해 감정 분석 수행
-- 분석 결과(감정 분류, 신뢰도)를 실시간으로 표시
+### 📋 설문 제출 팝업 제공
+- 성별, 나이대, 별점, 자유 피드백을 입력받는다.
 
 ### 📊 설문 결과 조회
 - Azure Cognitive Search를 통해 저장된 설문 응답 조회
@@ -64,3 +62,6 @@ EMAIL_HOST=smtp.gmail.com
 EMAIL_PORT=587
 EMAIL_ADDRESS=your_email@gmail.com
 EMAIL_PASSWORD=your_app_password
+
+---
+## ⚙️ Trouble Shooting

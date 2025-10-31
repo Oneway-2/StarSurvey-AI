@@ -179,7 +179,116 @@ def generate_daily_report(date: str, feedback_list: list[str], total_count: int,
 def main():
     st.title("Star Survey AI")
 
-    tabs = st.tabs(["📊 설문 결과 조회", "📋 설문 제출"])
+    tabs = st.tabs(["📊 설문 결과 조회", "📋 설문 제출", "테스트", "설계"])
+
+
+
+
+    # Tab 2: 설문 결과 조회
+    with tabs[0]:
+        st.subheader("제출된 설문 목록")        
+
+        try:
+            # Azure Search 클라이언트 초기화
+            search_client = SearchClient(
+                endpoint=SEARCH_ENDPOINT,
+                index_name=INDEX_NAME,
+                credential=AzureKeyCredential(SEARCH_API_KEY)
+            )
+            
+            # # 정렬 옵션
+            # sort_option = st.selectbox(
+            #     "정렬 기준",
+            #     ["별점 낮은순", "별점 높은순", "최신순"],
+            #     index=0
+            # )
+            
+            # # 정렬 기준 설정
+            # if sort_option == "최신순":
+            #     order_by = "timestamp desc"
+            # elif sort_option == "별점 높은순":
+            #     order_by = "rating desc"
+            # else:  # 별점 낮은순
+            #     order_by = "rating asc"
+
+            with st.form(key="report_form"):
+                st.markdown("조회하려면 아래 버튼을 클릭하세요.")
+                search_run = st.form_submit_button("조회")
+
+    
+            if search_run:                 
+
+                # 검색을 실행중임~~
+                with st.spinner("데이터를 불러오는 중입니다..."):
+                    # 검색 실행
+                    results = list(search_client.search(
+                        search_text="*",
+                        # order_by=order_by,
+                        select="id,timestamp,rating,gender,age_group,feedback"
+                    ))
+
+                # 날짜 목록 추출
+                date_list = sorted({doc['timestamp'][:10] for doc in results})
+                selected_date = st.selectbox("조회할 날짜를 선택하세요", date_list)
+
+                # 선택된 날짜에 해당하는 설문만 필터링
+                filtered_results = [doc for doc in results if doc['timestamp'].startswith(selected_date)]
+        
+
+                # 통계 정보 표시
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("총 응답 수", len(filtered_results))
+                with col2:
+                    avg_rating = sum(doc.get('rating', 0) for doc in filtered_results) / len(filtered_results) if filtered_results else 0
+                    st.metric("평균 별점", f"{avg_rating:.1f}")
+                with col3:
+                    positive_count = sum(1 for doc in filtered_results if doc.get('rating', 0) >= 4)
+                    st.metric("긍정적 응답", f"{positive_count}개")
+
+                ############# 보고서 추출부분
+                # 피드백만 추출
+                feedback_texts = [doc.get("feedback", "") for doc in filtered_results if doc.get("feedback")]
+                ratings = [doc.get("rating", 0) for doc in filtered_results]
+
+                # 통계 계산
+                total_count = len(filtered_results)
+                avg_rating = sum(ratings) / total_count if total_count else 0
+                positive_ratio = sum(1 for r in ratings if r >= 4) / total_count * 100 if total_count else 0
+                negative_ratio = sum(1 for r in ratings if r <= 2) / total_count * 100 if total_count else 0
+
+                # 보고서 생성
+                if feedback_texts:
+                    with st.spinner("AI가 보고서를 생성 중입니다..."):
+                        report = generate_daily_report(
+                            date=selected_date,
+                            feedback_list=feedback_texts,
+                            total_count=total_count,
+                            avg_rating=avg_rating,
+                            positive_ratio=positive_ratio,
+                            negative_ratio=negative_ratio
+                        )
+                        st.markdown("### 📝 고객 피드백 요약 보고서")
+                        st.markdown(report)
+                ############# 보고서 추출부분
+
+                # 결과 표시
+                with st.expander(f"📋 검색된 설문 응답 전부 보기 ({total_count}개)", expanded=False):
+                # st.markdown("### 📋 검색된 설문 응답")
+                    if not results:
+                        st.info("검색된 설문 응답이 없습니다.")
+                    
+                    for doc in results:
+                        with st.expander(f"⭐ {doc.get('rating')}점 | {doc.get('feedback')[:30]}...", expanded=True):
+                            st.markdown(f"**🕒 시간:** {doc.get('timestamp', 'N/A')}")
+                            st.markdown(f"**⭐ 별점:** {doc.get('rating', 'N/A')}")
+                            st.markdown(f"**👤 성별:** {doc.get('gender', 'N/A')}")
+                            st.markdown(f"**🎂 나이대:** {doc.get('age_group', 'N/A')}")
+                            st.markdown(f"**💬 피드백:** {doc.get('feedback', 'N/A')}")
+
+        except Exception as e:
+            st.error(f"데이터 조회 중 오류가 발생했습니다: {str(e)}")
+            st.write("상세 오류:", e.__class__.__name__)    
 
     # Tab 1: 설문 제출
     with tabs[1]:
@@ -216,103 +325,119 @@ def main():
 
 
 
+    # Tab 2: 테스트
+    with tabs[2]:
+        st.set_page_config(page_title="서비스 피드백", layout="centered")
 
-    # Tab 2: 설문 결과 조회
-    with tabs[0]:
-        st.subheader("제출된 설문 목록")        
+        st.markdown("""
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>서비스 피드백</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: 'Noto Sans KR', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .card {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+    .card h2 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    .card p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 24px;
+    }
+    .stars {
+      margin-bottom: 24px;
+    }
+    .star {
+      font-size: 24px;
+      color: #ccc;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+    .star:hover,
+    .star.selected {
+      color: #ff9800;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: none;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    button {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #e68900;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>서비스는 어떠셨나요?</h2>
+    <div class="stars">
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+      <span class="star">&#9733;</span>
+    </div>
+    <p>여러분의 의견을 남겨주세요. <br>더 나은 서비스로 보답하겠습니다.</p>
+    <textarea placeholder="여기에 의견을 입력해주세요..."></textarea>
+    <button>등록</button>
+  </div>
+</body>
+</html>
 
-        try:
-            # Azure Search 클라이언트 초기화
-            search_client = SearchClient(
-                endpoint=SEARCH_ENDPOINT,
-                index_name=INDEX_NAME,
-                credential=AzureKeyCredential(SEARCH_API_KEY)
-            )
-            
-            # 정렬 옵션
-            sort_option = st.selectbox(
-                "정렬 기준",
-                ["별점 낮은순", "별점 높은순", "최신순"],
-                index=0
-            )
-            
-            # 정렬 기준 설정
-            if sort_option == "최신순":
-                order_by = "timestamp desc"
-            elif sort_option == "별점 높은순":
-                order_by = "rating desc"
-            else:  # 별점 낮은순
-                order_by = "rating asc"
+        """, unsafe_allow_html=True)    
 
-            # 검색을 실행중임~~
-            with st.spinner("데이터를 불러오는 중입니다..."):
-                # 검색 실행
-                results = list(search_client.search(
-                    search_text="*",
-                    order_by=order_by,
-                    select="id,timestamp,rating,gender,age_group,feedback"
-                ))
 
-            # 날짜 목록 추출
-            date_list = sorted({doc['timestamp'][:10] for doc in results})
-            selected_date = st.selectbox("조회할 날짜를 선택하세요", date_list)
-            # 선택된 날짜에 해당하는 설문만 필터링
-            filtered_results = [doc for doc in results if doc['timestamp'].startswith(selected_date)]
+    # Tab 2: 설문설계 페이지 UI
+    with tabs[3]:
+        st.subheader("📝 설문 설계")
 
-            # 통계 정보 표시
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("총 응답 수", len(filtered_results))
-            with col2:
-                avg_rating = sum(doc.get('rating', 0) for doc in filtered_results) / len(filtered_results) if filtered_results else 0
-                st.metric("평균 별점", f"{avg_rating:.1f}")
-            with col3:
-                positive_count = sum(1 for doc in filtered_results if doc.get('rating', 0) >= 4)
-                st.metric("긍정적 응답", f"{positive_count}개")
+        # 1. 설문 이름
+        survey_title = st.text_input("1. 설문 이름", placeholder="예: 고객 만족도 조사")
 
-            ############# 보고서 추출부분
-            # 피드백만 추출
-            feedback_texts = [doc.get("feedback", "") for doc in filtered_results if doc.get("feedback")]
-            ratings = [doc.get("rating", 0) for doc in filtered_results]
+        # 2. 메인 질문
+        main_question = st.text_input("2. 메인 질문", placeholder="예: 이번 서비스는 만족스러우셨나요?")
 
-            # 통계 계산
-            total_count = len(filtered_results)
-            avg_rating = sum(ratings) / total_count if total_count else 0
-            positive_ratio = sum(1 for r in ratings if r >= 4) / total_count * 100 if total_count else 0
-            negative_ratio = sum(1 for r in ratings if r <= 2) / total_count * 100 if total_count else 0
+        # 3. 질문 placeholder
+        question_placeholder = st.text_input("3. 질문 입력창 안내 문구", placeholder="예: 자유롭게 의견을 입력해주세요.")
 
-            # 보고서 생성
-            if feedback_texts:
-                with st.spinner("AI가 보고서를 생성 중입니다..."):
-                    report = generate_daily_report(
-                        date=selected_date,
-                        feedback_list=feedback_texts,
-                        total_count=total_count,
-                        avg_rating=avg_rating,
-                        positive_ratio=positive_ratio,
-                        negative_ratio=negative_ratio
-                    )
-                    st.markdown("### 📝 고객 피드백 요약 보고서")
-                    st.markdown(report)
-            ############# 보고서 추출부분
-
-            # 결과 표시
-            with st.expander(f"📋 검색된 설문 응답 전부 보기 ({total_count}개)", expanded=False):
-            # st.markdown("### 📋 검색된 설문 응답")
-                if not results:
-                    st.info("검색된 설문 응답이 없습니다.")
-                
-                for doc in results:
-                    with st.expander(f"⭐ {doc.get('rating')}점 | {doc.get('feedback')[:30]}...", expanded=True):
-                        st.markdown(f"**🕒 시간:** {doc.get('timestamp', 'N/A')}")
-                        st.markdown(f"**⭐ 별점:** {doc.get('rating', 'N/A')}")
-                        st.markdown(f"**👤 성별:** {doc.get('gender', 'N/A')}")
-                        st.markdown(f"**🎂 나이대:** {doc.get('age_group', 'N/A')}")
-                        st.markdown(f"**💬 피드백:** {doc.get('feedback', 'N/A')}")
-
-        except Exception as e:
-            st.error(f"데이터 조회 중 오류가 발생했습니다: {str(e)}")
-            st.write("상세 오류:", e.__class__.__name__)
+        # 미리보기
+        st.markdown("---")
+        st.markdown("### 🔍 설문 미리보기")
+        st.write(f"**{main_question or '메인 질문이 여기에 표시됩니다.'}**")
+        st.text_area(label=question_placeholder or "질문 입력창 안내 문구가 여기에 표시됩니다...", height=100)
 
 if __name__ == "__main__":
     main()
