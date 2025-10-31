@@ -13,7 +13,7 @@
 
 ## ✨ 비지니스 모델
 - 편리하게 UI상에서 설문에 대한 설계를 하고, 결과를 분석해서 이메일로 받을 수 있는 서비스를 제공하는 대가로
-- 구독료 받기
+- <b>구독료 받기</b>
 - 설문 팝업 아래 광고 배너 삽입
 
 ## 🚀 주요 기능
@@ -71,11 +71,34 @@ azure-core
 ```
 ---
 ## 개선방향 
-1. 
+### 1. 모듈화
+- 현재 streamlit 코드 내 모든 소스코드가 모여있어, 소스코드가 너무 길어짐.
+- 이것을 UI로직, 백엔드로직 등으로 분리하여 여러 class형태로 나누어 사용하면 유지관리가 편리할 것.
+### 2. 저장소 사용
+- 설문을 저장할 저장소, 하루치 응답량을 모아 작성된 리포트 템플릿을 저장할 저장소를 위한 DB구성
+- 하루치 데이터별로 Azure Storage account 나 , Azure AI Search 내에 indexes로 넣어두어도 좋을 듯.
+- 버전별 컨테이너화 한 이미지 registry 구성
+### 3. 배포
+- AKS 사용하여 기능별로 컨테이너로 관리
+  - 설문 관리 포탈 UI (FE/BE)
+  - 설문 팝업(FE/BE)
+  - 00시 데이터 취합 및 보고서 작성 스케쥴러
+### 4. 응답 다양성/정확도 개선
+- DB로부터 주관식 응답만 받고 prompt 템플릿을 통해 보고서형태의 응답을 도출하도록 하였으나
+- 나이, 성별, yes/no 2지선다 응답 등 더 많은 정보를 토대로 다채로운 답변을 보낼 수 있도록 개선
+- 설문 응답량이 엄청 많이 들어오는경우 쿼리 데이터를 chunk 하는 방법 고안
+
 ---
 ## 💢 Trouble Shooting
+- Github action - Azure App service를 통한 web app 배포간에 package 형태로 배포되어 root 경로에 startup.sh 를 찾지못함
+  - 환경변수 SCM_DO_BUILD_DURING_DEPLOYMENT 와, WEBSITE_RUN_FROM_PACKAGE 값을 0으로 바꾸어 해결
+
+- 
 
 ## 만들며 어려웠던 점
+### - 설문 관리자 포탈, 설문 팝업 등 모두 시연 가능하게 만들고자 하였으나 쉽지않았음.
+### - 그것에 시간을 너무 뺐기다보니, AI적인 기술을 사용하는 주 목적을 잊고 만드는 것 같아 아쉬웠음.
+### - AI Search와 같은 search에 특화된 편리한 서비스가 존재하긴 하나, 단순히 data 저장, sort, filter 정도로만 사용해서 아쉬웠음. (고도화?)
 
 ## 시연 페이지
 https://pro-hankil-webapp-1-gsbfbscrgfdtfcaa.swedencentral-01.azurewebsites.net/
